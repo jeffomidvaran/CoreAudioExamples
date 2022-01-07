@@ -11,7 +11,10 @@
 
 #define SAMPLE_RATE 44100
 #define DURATION 5.0 // how many seconds of audio to create
-#define FILENAME_FORMAT @"%0.3f-square.aif"
+//#define FILENAME_FORMAT @"%0.3f-square.aif"
+//#define FILENAME_FORMAT @"%0.3f-saw.aif"
+#define FILENAME_FORMAT @"%0.3f-sine.aif"
+
 
 
 int main(int argc, const char * argv[]) {
@@ -40,14 +43,14 @@ int main(int argc, const char * argv[]) {
         asbd.mSampleRate = SAMPLE_RATE;
         asbd.mFormatID = kAudioFormatLinearPCM;
         asbd.mFormatFlags = kAudioFormatFlagIsBigEndian |
-                            kAudioFormatFlagIsSignedInteger |
-                            kAudioFormatFlagIsPacked; // use all bits avalible in byte
+        kAudioFormatFlagIsSignedInteger |
+        kAudioFormatFlagIsPacked; // use all bits avalible in byte
         asbd.mBitsPerChannel = 16; // 16 bit
         asbd.mChannelsPerFrame = 1;
         asbd.mFramesPerPacket = 1;
         asbd.mBytesPerFrame = 2; // non-variable bit rateencoding
         asbd.mBytesPerPacket = 2;
-
+        
         // Set up the file
         AudioFileID audioFile;
         OSStatus audioErr = noErr;
@@ -67,21 +70,28 @@ int main(int argc, const char * argv[]) {
         double wavelengthInSamples = SAMPLE_RATE / hz;  // # of samples in a wave length
         while (sampleCount < maxSampleCount) {
             for (int i=0; i<wavelengthInSamples; i++) {
-                // Square wave
-                SInt16 sample;
-                if (i < wavelengthInSamples/2) {
-                    // 1st half
-                    sample = CFSwapInt16HostToBig (SHRT_MAX); // swap from little to Big Endian unsigned ints
-                } else {
-                    // 2nd half
-                    sample = CFSwapInt16HostToBig (SHRT_MIN);
-                }
-                // this function can be used becase
+                //                                                               convert to radians
+                //                                                                        i percent of wavelength
+                // SIN WAVE
+                SInt16 sample = CFSwapInt16HostToBig ((SInt16) SHRT_MAX * sin(2 * M_PI * (i / wavelengthInSamples)));
+                
+//                // SAW WAVE
+//                SInt16 sample = CFSwapInt16HostToBig (((i / wavelengthInSamples) * SHRT_MAX *2) - SHRT_MAX);
+//
+//                // SQUARE WAVE
+//                SInt16 sample;
+//                if (i < wavelengthInSamples/2) {
+//                    // 1st half
+//                    sample = CFSwapInt16HostToBig (SHRT_MAX); // swap from little to Big Endian unsigned ints
+//                } else {
+//                    // 2nd half
+//                    sample = CFSwapInt16HostToBig (SHRT_MIN);
+//                }
                 audioErr = AudioFileWriteBytes(audioFile,
-                                               false, // caching flag
-                                               sampleCount*2, // audio offset
+                                               false,
+                                               sampleCount*2,
                                                &bytesToWrite,
-                                               &sample); // bytes to be written
+                                               &sample);
                 assert (audioErr == noErr);
                 sampleCount++;
             }
