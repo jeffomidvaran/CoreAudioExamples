@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 
-
 #define SAMPLE_RATE 44100
 #define DURATION 5.0 // how many seconds of audio to create
 //#define FILENAME_FORMAT @"%0.3f-square.aif"
